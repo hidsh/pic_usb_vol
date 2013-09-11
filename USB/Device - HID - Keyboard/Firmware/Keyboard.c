@@ -50,6 +50,7 @@
 #include "./USB/usb.h"
 #include "HardwareProfile.h"
 #include "./USB/usb_function_hid.h"
+#include "kbd_usage.h"
 
 /** CONFIGURATION **************************************************/
 #if defined(PICDEM_FS_USB)      // Configuration bits for PICDEM FS USB Demo Board (based on PIC18F4550)
@@ -897,10 +898,10 @@ void ProcessIO(void)
 	
 	//Check if we should assert a remote wakeup request to the USB host, when
 	//the user presses the pushbutton.
-    if(sw2 == 0)
-    {
+//    if(sw2 == 0)
+//    {
 //        USBCBSendResume(); //Does nothing unless we are in USB suspend with remote wakeup armed.
-    } 
+//    }
 
     // User Application USB tasks
     if((USBDeviceState < CONFIGURED_STATE)||(USBSuspendControl==1)) return;
@@ -910,47 +911,32 @@ void ProcessIO(void)
      
 }//end ProcessIO
 
+void send_report(unsigned char key)
+{
+    hid_report_in[0] = 0;
+    hid_report_in[1] = 0;
+    hid_report_in[2] = key;
+    hid_report_in[3] = 0;
+    hid_report_in[4] = 0;
+    hid_report_in[5] = 0;
+    hid_report_in[6] = 0;
+    hid_report_in[7] = 0;
+    //Send the 8 byte packet over USB to the host.
+    lastINTransmission = HIDTxPacket(HID_EP, (BYTE*)hid_report_in, 0x08);
+}
 
 void Keyboard(void)
 {
-	static unsigned char key = 4;	
-
 	//Check if the IN endpoint is not busy, and if it isn't check if we want to send 
 	//keystroke data to the host.
     if(!HIDTxHandleBusy(lastINTransmission))
     {
-        if(Switch3IsPressed())
-        {
-        	//Load the HID buffer
-        	hid_report_in[0] = 0;
-        	hid_report_in[1] = 0;
-        	hid_report_in[2] = key++;
-        	hid_report_in[3] = 0;
-        	hid_report_in[4] = 0;
-        	hid_report_in[5] = 0;
-        	hid_report_in[6] = 0;
-        	hid_report_in[7] = 0;
-           	//Send the 8 byte packet over USB to the host.
-           	lastINTransmission = HIDTxPacket(HID_EP, (BYTE*)hid_report_in, 0x08);
-    
-            if(key == 40)
-            {
-                key = 4;
-            }
-        }
-        else
-        {
-        	//Load the HID buffer
-        	hid_report_in[0] = 0;
-        	hid_report_in[1] = 0;
-        	hid_report_in[2] = 0;   //Indicate no character pressed
-        	hid_report_in[3] = 0;
-        	hid_report_in[4] = 0;
-        	hid_report_in[5] = 0;
-        	hid_report_in[6] = 0;
-        	hid_report_in[7] = 0;
-           	//Send the 8 byte packet over USB to the host.
-           	lastINTransmission = HIDTxPacket(HID_EP, (BYTE*)hid_report_in, 0x08);
+        if(Switch2IsPressed()) {
+            send_report(KEY_VOLUME_DOWN);
+        } else if(Switch3IsPressed()) {
+            send_report(KEY_VOLUME_UP);
+        }else {
+            send_report(KEY_NONE);
         }
     }
     
