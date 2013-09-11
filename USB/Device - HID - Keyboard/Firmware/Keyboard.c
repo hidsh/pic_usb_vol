@@ -899,7 +899,7 @@ void ProcessIO(void)
 	//the user presses the pushbutton.
     if(sw2 == 0)
     {
-        USBCBSendResume(); //Does nothing unless we are in USB suspend with remote wakeup armed.
+//        USBCBSendResume(); //Does nothing unless we are in USB suspend with remote wakeup armed.
     } 
 
     // User Application USB tasks
