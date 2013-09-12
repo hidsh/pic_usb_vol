@@ -23,7 +23,7 @@
     </conf>
     <conf name="LPC_USB_Development_Kit_PIC18F14K50" type="2">
       <platformToolSN></platformToolSN>
-      <languageToolchainDir></languageToolchainDir>
+      <languageToolchainDir>C:\Program Files\Microchip\mplabc18\v3.46\bin</languageToolchainDir>
       <mdbdebugger version="1">
         <placeholder1>place holder 1</placeholder1>
         <placeholder2>place holder 2</placeholder2>
@@ -59,7 +59,7 @@
     </conf>
     <conf name="PICDEM_FSUSB_K50" type="2">
       <platformToolSN></platformToolSN>
-      <languageToolchainDir></languageToolchainDir>
+      <languageToolchainDir>C:\Program Files\Microchip\mplabc18\v3.46\bin</languageToolchainDir>
       <mdbdebugger version="1">
         <placeholder1>place holder 1</placeholder1>
         <placeholder2>place holder 2</placeholder2>

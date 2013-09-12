@@ -376,6 +376,10 @@ USB_HANDLE lastOUTTransmission;
 BOOL Keyboard_out;
 BOOL BlinkStatusValid;
 DWORD CountdownTimerToShowUSBStatusOnLEDs;
+
+enum ROT_DIRECTION {ROT_NA, ROT_FF, ROT_RW};
+BYTE rot, rot_old;
+
 /** PRIVATE PROTOTYPES *********************************************/
 void BlinkUSBStatus(void);
 BOOL Switch2IsPressed(void);
@@ -389,6 +393,8 @@ void USBCBSendResume(void);
 void Keyboard(void);
 
 void USBHIDCBSetReportComplete(void);
+
+void read_rotary_encoder(void);
 
 /** VECTOR REMAPPING ***********************************************/
 #if defined(__18CXX)
@@ -482,6 +488,7 @@ void USBHIDCBSetReportComplete(void);
         #if defined(USB_INTERRUPT)
 	        USBDeviceTasks();
         #endif
+                read_rotary_encoder();
 	
 	}	//This return will be a "retfie fast", since this is in a #pragma interrupt section 
 	#pragma interruptlow YourLowPriorityISRCode
@@ -491,7 +498,7 @@ void USBHIDCBSetReportComplete(void);
 		//Service the interrupt
 		//Clear the interrupt flag
 		//Etc.
-	
+
 	}	//This return will be a "retfie", since this is in a #pragma interruptlow section 
 
 #elif defined(__C30__) || defined __XC16__
@@ -819,7 +826,6 @@ static void InitializeSystem(void)
 }//end InitializeSystem
 
 
-
 /******************************************************************************
  * Function:        void UserInit(void)
  *
@@ -844,9 +850,9 @@ void UserInit(void)
     BlinkStatusValid = TRUE;
     
     //Initialize all of the push buttons
-    mInitAllSwitches();
-    old_sw2 = sw2;
-    old_sw3 = sw3;
+//    mInitAllSwitches();
+//    old_sw2 = sw2;
+//    old_sw3 = sw3;
 
     //initialize the variable holding the handle for the last
     // transmission
@@ -854,6 +860,24 @@ void UserInit(void)
     lastINTransmission = 0;
     lastOUTTransmission = 0;
 
+    
+    // rotary encoder
+#if __18F14K50
+    INTCON2bits.RABPU = 0;          // PORTB pull up all
+    INTCONbits.RABIF = 0;           // clear int flag
+    INTCONbits.RABIE = 1;           // enable int (input-change)
+    IOCB = 0xC0;                    // bit7..6 as input-change
+    INTCONbits.GIE = 1;             // enable global int
+#elif __18F2550
+    INTCON2bits.RBPU = 0;           // PORTB pull up all
+    INTCONbits.RBIF = 0;            // clear int flag
+    INTCONbits.RBIE = 1;            // enable int (input-change)
+    INTCONbits.GIE = 1;             // enable global int
+#else
+#error not defined INTCON
+#endif
+
+    rot = ROT_NA;
 }//end UserInit
 
 
@@ -911,7 +935,34 @@ void ProcessIO(void)
      
 }//end ProcessIO
 
-void send_report(unsigned char key)
+void read_rotary_encoder(void)
+{
+    static BYTE i;
+    BYTE new;
+
+#if __18F14K50
+#define INT_FLAG INTCONbits.RABIF
+#elif __18F2550
+#define INT_FLAG INTCONbits.RBIF
+#else
+#error not defined INTCON
+#endif
+    if(INT_FLAG == 0) return;
+
+    INT_FLAG = 0;                           // clear int flag
+    new = (PORTB >> 4) & 0x03;              // PORTB:00AB_0000
+    i = (i << 2) + new;                     // i:0000_OONN
+    i &= 15;                                //        ^  ^-- N:new value
+                                            //        +----- O:old value
+    switch (i) {
+        case 0b00001101:                    /* 3 -> 1 */
+            rot_old = rot; rot = ROT_FF; break;
+        case 0b00000111:                    /* 1 -> 3 */
+            rot_old = rot; rot = ROT_RW; break;
+    }
+}
+
+void send_report(BYTE key)
 {
     hid_report_in[0] = 0;
     hid_report_in[1] = 0;
@@ -927,17 +978,24 @@ void send_report(unsigned char key)
 
 void Keyboard(void)
 {
-	//Check if the IN endpoint is not busy, and if it isn't check if we want to send 
-	//keystroke data to the host.
+    //Check if the IN endpoint is not busy, and if it isn't check if we want to send
+    //keystroke data to the host.
     if(!HIDTxHandleBusy(lastINTransmission))
     {
-        if(Switch2IsPressed()) {
-            send_report(KEY_VOLUME_DOWN);
-        } else if(Switch3IsPressed()) {
-            send_report(KEY_VOLUME_UP);
-        }else {
-            send_report(KEY_NONE);
-        }
+        BYTE key;
+
+        if((rot_old == ROT_NA) && (rot == ROT_NA))
+            return;
+        else if(rot == ROT_NA)
+            key = KEY_NONE;
+        else if(rot == ROT_FF)
+            key = KEY_VOLUME_UP;
+        else if(rot == ROT_RW)
+            key = KEY_VOLUME_DOWN;
+
+        send_report(key);
+        rot_old = rot;
+        rot = ROT_NA;
     }
     
     
