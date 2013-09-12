@@ -328,7 +328,7 @@
     <conf name="PICDEM_FSUSB" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <targetDevice>PIC18F2550</targetDevice>
+        <targetDevice>PIC18F14K50</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>

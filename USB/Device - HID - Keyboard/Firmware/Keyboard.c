@@ -865,10 +865,11 @@ void UserInit(void)
     
     // rotary encoder
 #if __18F14K50
+    ANSELH = 0b00000000;            // analog/digital: all digital
     INTCON2bits.RABPU = 0;          // PORTB pull up all
     INTCONbits.RABIF = 0;           // clear int flag
     INTCONbits.RABIE = 1;           // enable int (input-change)
-    IOCB = 0xC0;                    // bit7..6 as input-change
+    IOCB = 0x30;                    // bit5..4 as input-change
     INTCONbits.GIE = 1;             // enable global int
 #elif __18F2550
     INTCON2bits.RBPU = 0;           // PORTB pull up all
