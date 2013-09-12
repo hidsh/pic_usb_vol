@@ -845,14 +845,16 @@ static void InitializeSystem(void)
  *****************************************************************************/
 void UserInit(void)
 {
+#if 0
     //Initialize all of the LED pins
     mInitAllLEDs();
     BlinkStatusValid = TRUE;
-    
+
     //Initialize all of the push buttons
-//    mInitAllSwitches();
-//    old_sw2 = sw2;
-//    old_sw3 = sw3;
+    mInitAllSwitches();
+    old_sw2 = sw2;
+    old_sw3 = sw3;
+#endif
 
     //initialize the variable holding the handle for the last
     // transmission
@@ -900,6 +902,7 @@ void UserInit(void)
  *******************************************************************/
 void ProcessIO(void)
 {   
+#if 0
     //Blink the LEDs according to the USB device status
     //However, the LEDs are also used temporarily for showing the Num Lock 
     //keyboard LED status.  If the host sends an LED state update interrupt
@@ -910,22 +913,21 @@ void ProcessIO(void)
     if(BlinkStatusValid == TRUE)
     {
 	    BlinkUSBStatus();
-	}
-	else
-	{
-		CountdownTimerToShowUSBStatusOnLEDs--;
-		if(CountdownTimerToShowUSBStatusOnLEDs == 0)
-		{
-			BlinkStatusValid = TRUE;
-		}	
-	}	 
+    } else {
+        CountdownTimerToShowUSBStatusOnLEDs--;
+        if(CountdownTimerToShowUSBStatusOnLEDs == 0)
+        {
+            BlinkStatusValid = TRUE;
+        }
+    }
 	
-	//Check if we should assert a remote wakeup request to the USB host, when
-	//the user presses the pushbutton.
-//    if(sw2 == 0)
-//    {
-//        USBCBSendResume(); //Does nothing unless we are in USB suspend with remote wakeup armed.
-//    }
+    //Check if we should assert a remote wakeup request to the USB host, when
+    //the user presses the pushbutton.
+    if(sw2 == 0)
+    {
+        USBCBSendResume(); //Does nothing unless we are in USB suspend with remote wakeup armed.
+    }
+#endif
 
     // User Application USB tasks
     if((USBDeviceState < CONFIGURED_STATE)||(USBSuspendControl==1)) return;
@@ -972,6 +974,7 @@ void send_report(BYTE key)
     hid_report_in[5] = 0;
     hid_report_in[6] = 0;
     hid_report_in[7] = 0;
+
     //Send the 8 byte packet over USB to the host.
     lastINTransmission = HIDTxPacket(HID_EP, (BYTE*)hid_report_in, 0x08);
 }
@@ -998,7 +1001,7 @@ void Keyboard(void)
         rot = ROT_NA;
     }
     
-    
+#if 0
     //Check if any data was sent from the PC to the keyboard device.  Report descriptor allows
     //host to send 1 byte of data.  Bits 0-4 are LED states, bits 5-7 are unused pad bits.
     //The host can potentially send this OUT report data through the HID OUT endpoint (EP1 OUT),
@@ -1006,7 +1009,8 @@ void Keyboard(void)
     //SET_REPORT control transfer on EP0.  See the USBHIDCBSetReportHandler() function.
     if(!HIDRxHandleBusy(lastOUTTransmission))
     {
-		//Do something useful with the data now.  Data is in the OutBuffer[0].
+
+        //Do something useful with the data now.  Data is in the OutBuffer[0].
 		//Num Lock LED state is in Bit0.
 		if(hid_report_out[0] & 0x01) //Make LED1 and LED2 match Num Lock state.
 		{
@@ -1025,8 +1029,8 @@ void Keyboard(void)
 		CountdownTimerToShowUSBStatusOnLEDs = 140000;
 	
 		lastOUTTransmission = HIDRxPacket(HID_EP,(BYTE*)&hid_report_out,1);
-	} 
-    
+    }
+#endif
     return;		
 }//end keyboard()
 
