@@ -2,4 +2,6 @@ debug/*
 *.o.d
 *.cof
 *.map
+*.hex
 /USB/Device - HID - Keyboard/Firmware/MPLAB.X/build/
+/USB/Device - HID - Keyboard/Firmware/MPLAB.X/dist/LPC_USB_Development_Kit_PIC18F14K50/

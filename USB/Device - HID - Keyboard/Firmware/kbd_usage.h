@@ -79,7 +79,7 @@ extern "C" {
     #define  KEY_F11              68
     #define  KEY_F12              69
     #define  KEY_PRINTSCREEN      70
-    #define  KEY_SCROLL LOCK      71
+    #define  KEY_SCROLL_LOCK      71
     #define  KEY_PAUSE            72
     #define  KEY_INSERT           73
     #define  KEY_HOME             74
@@ -112,6 +112,9 @@ extern "C" {
     #define  KEY_VOLUME_UP       128
     #define  KEY_VOLUME_DOWN     129
 
+    #define KEY_EJECT            184
+    #define KEY_MUTE             226
+
     #define  KEY_MODIFIER_NONE          0x00
     #define  KEY_MODIFIER_LEFT_CTRL     0x01
     #define  KEY_MODIFIER_LEFT_SHIFT    0x02
@@ -122,9 +125,16 @@ extern "C" {
     #define  KEY_MODIFIER_RIGHT_ALT     0x40
     #define  KEY_MODIFIER_RIGHT_GUI     0x80
 
+    // Mac
+    #define  KEY_MODIFIER_LEFT_CMD      KEY_MODIFIER_LEFT_GUI
+    #define  KEY_MODIFIER_LEFT_OPT      KEY_MODIFIER_LEFT_ALT
+
+    // Windows
+    #define  KEY_MODIFIER_WINDOWS       KEY_MODIFIER_LEFT_GUI
+    #define  KEY_MODIFIER_MENU          KEY_MODIFIER_RIGHT_GUI
+
 #ifdef	__cplusplus
 }
 #endif
 
 #endif	/* KBD_USAGE_H */
-

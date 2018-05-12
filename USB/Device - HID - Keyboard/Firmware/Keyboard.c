@@ -48,7 +48,7 @@
 
 /** INCLUDES *******************************************************/
 #include "./USB/usb.h"
-#include "HardwareProfile.h"
+#include "./HardwareProfile.h"
 #include "./USB/usb_function_hid.h"
 #include "kbd_usage.h"
 
@@ -377,8 +377,8 @@ BOOL Keyboard_out;
 BOOL BlinkStatusValid;
 DWORD CountdownTimerToShowUSBStatusOnLEDs;
 
-enum ROT_DIRECTION {ROT_NA, ROT_FF, ROT_RW};
-BYTE rot, rot_old;
+typedef enum {ROT_NA, ROT_FF, ROT_RW} eROT_DIR;
+eROT_DIR rot;
 
 /** PRIVATE PROTOTYPES *********************************************/
 void BlinkUSBStatus(void);
@@ -488,7 +488,8 @@ void read_rotary_encoder(void);
         #if defined(USB_INTERRUPT)
 	        USBDeviceTasks();
         #endif
-                read_rotary_encoder();
+    
+        read_rotary_encoder();
 	
 	}	//This return will be a "retfie fast", since this is in a #pragma interrupt section 
 	#pragma interruptlow YourLowPriorityISRCode
@@ -865,10 +866,11 @@ void UserInit(void)
     
     // rotary encoder
 #if __18F14K50
+    ANSELH = 0b00000000;            // analog/digital: all digital
     INTCON2bits.RABPU = 0;          // PORTB pull up all
     INTCONbits.RABIF = 0;           // clear int flag
     INTCONbits.RABIE = 1;           // enable int (input-change)
-    IOCB = 0xC0;                    // bit7..6 as input-change
+    IOCB = 0x30;                    // bit5..4 as input-change
     INTCONbits.GIE = 1;             // enable global int
 #elif __18F2550
     INTCON2bits.RBPU = 0;           // PORTB pull up all
@@ -937,33 +939,6 @@ void ProcessIO(void)
      
 }//end ProcessIO
 
-void read_rotary_encoder(void)
-{
-    static BYTE i;
-    BYTE new;
-
-#if __18F14K50
-#define INT_FLAG INTCONbits.RABIF
-#elif __18F2550
-#define INT_FLAG INTCONbits.RBIF
-#else
-#error not defined INTCON
-#endif
-    if(INT_FLAG == 0) return;
-
-    INT_FLAG = 0;                           // clear int flag
-    new = (PORTB >> 4) & 0x03;              // PORTB:00AB_0000
-    i = (i << 2) + new;                     // i:0000_OONN
-    i &= 15;                                //        ^  ^-- N:new value
-                                            //        +----- O:old value
-    switch (i) {
-        case 0b00001101:                    /* 3 -> 1 */
-            rot_old = rot; rot = ROT_FF; break;
-        case 0b00000111:                    /* 1 -> 3 */
-            rot_old = rot; rot = ROT_RW; break;
-    }
-}
-
 void send_report(BYTE key)
 {
     hid_report_in[0] = 0;
@@ -979,6 +954,40 @@ void send_report(BYTE key)
     lastINTransmission = HIDTxPacket(HID_EP, (BYTE*)hid_report_in, 0x08);
 }
 
+void read_rotary_encoder(void)
+{
+    static BYTE dat = 0;
+    BYTE enc;
+
+#if __18F14K50
+#define INT_FLAG INTCONbits.RABIF
+#elif __18F2550
+#define INT_FLAG INTCONbits.RBIF
+#else
+#error not defined INTCON
+#endif
+
+    if(INT_FLAG == 0) return;
+    INT_FLAG = 0;                           // clear int flag
+    
+#undef INT_FLAG
+
+    enc = PORTB & 0x30;                     // PORTB:00AB_0000
+    dat = ((dat << 2) & 0xC0) | enc;        // enc  :oonn_0000
+                                            //       ^  ^-- n:new value
+                                            //       +----- o:old value
+    switch (dat) {
+        case 0b11010000:                    // 3 -> 1
+            rot = ROT_FF;
+            break;
+        case 0b01110000:                    // 1 -> 3
+            rot = ROT_RW;
+            break;
+        default:
+            break;
+    }
+}
+
 void Keyboard(void)
 {
     //Check if the IN endpoint is not busy, and if it isn't check if we want to send
@@ -987,17 +996,14 @@ void Keyboard(void)
     {
         BYTE key;
 
-        if((rot_old == ROT_NA) && (rot == ROT_NA))
-            return;
-        else if(rot == ROT_NA)
-            key = KEY_NONE;
-        else if(rot == ROT_FF)
+        if(rot == ROT_FF)
             key = KEY_VOLUME_UP;
         else if(rot == ROT_RW)
             key = KEY_VOLUME_DOWN;
+        else
+            key = KEY_NONE;
 
         send_report(key);
-        rot_old = rot;
         rot = ROT_NA;
     }
     
@@ -1031,8 +1037,7 @@ void Keyboard(void)
 		lastOUTTransmission = HIDRxPacket(HID_EP,(BYTE*)&hid_report_out,1);
     }
 #endif
-    return;		
-}//end keyboard()
+} // Keyboard()
 
 
 #if 0
