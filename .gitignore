@@ -2,3 +2,4 @@ debug/*
 *.o.d
 *.cof
 *.map
+/USB/Device - HID - Keyboard/Firmware/MPLAB.X/build/

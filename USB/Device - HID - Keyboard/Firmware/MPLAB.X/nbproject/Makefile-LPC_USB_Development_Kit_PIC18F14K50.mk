@@ -13,8 +13,8 @@ ifeq "${IGNORE_LOCAL}" "TRUE"
 else
 include Makefile
 # Include makefile containing local settings
-ifeq "$(wildcard nbproject/Makefile-local-PICDEM_FSUSB.mk)" "nbproject/Makefile-local-PICDEM_FSUSB.mk"
-include nbproject/Makefile-local-PICDEM_FSUSB.mk
+ifeq "$(wildcard nbproject/Makefile-local-LPC_USB_Development_Kit_PIC18F14K50.mk)" "nbproject/Makefile-local-LPC_USB_Development_Kit_PIC18F14K50.mk"
+include nbproject/Makefile-local-LPC_USB_Development_Kit_PIC18F14K50.mk
 endif
 endif
 
@@ -25,7 +25,7 @@ MV=mv
 CP=cp 
 
 # Macros
-CND_CONF=PICDEM_FSUSB
+CND_CONF=LPC_USB_Development_Kit_PIC18F14K50
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
 IMAGE_TYPE=debug
 OUTPUT_SUFFIX=cof
@@ -87,11 +87,11 @@ FIXDEPS=fixDeps
 ifneq ($(INFORMATION_MESSAGE), )
 	@echo $(INFORMATION_MESSAGE)
 endif
-	${MAKE}  -f nbproject/Makefile-PICDEM_FSUSB.mk dist/${CND_CONF}/${IMAGE_TYPE}/MPLAB.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+	${MAKE}  -f nbproject/Makefile-LPC_USB_Development_Kit_PIC18F14K50.mk dist/${CND_CONF}/${IMAGE_TYPE}/MPLAB.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
 
-MP_PROCESSOR_OPTION=18F2550
-MP_PROCESSOR_OPTION_LD=18f2550
-MP_LINKER_DEBUG_OPTION= -u_DEBUGCODESTART=0x7dc0 -u_DEBUGCODELEN=0x240 -u_DEBUGDATASTART=0x3f4 -u_DEBUGDATALEN=0xb
+MP_PROCESSOR_OPTION=18F14K50
+MP_PROCESSOR_OPTION_LD=18f14k50
+MP_LINKER_DEBUG_OPTION= -u_DEBUGCODESTART=0x3e00 -u_DEBUGCODELEN=0x200
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: assemble
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
@@ -206,8 +206,8 @@ endif
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/PICDEM_FSUSB
-	${RM} -r dist/PICDEM_FSUSB
+	${RM} -r build/LPC_USB_Development_Kit_PIC18F14K50
+	${RM} -r dist/LPC_USB_Development_Kit_PIC18F14K50
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl
