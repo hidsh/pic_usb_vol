@@ -4,13 +4,13 @@
 # 主な処理内容
 ファイル: `pic_usb_vol/USB/Device - HID - Keyboard/Firmware/Keyboard.c`
 
-###### UserInit()
+### UserInit()
 ロータリーエンコーダを読むためのポート設定を関数の後半に書いてある。
 
-###### read_rotary_encoder()
+### read_rotary_encoder()
 ここでロータリーエンコーダを読む。 周期割り込み(?)からコールされる。
 
-###### Keyboard()
+### Keyboard()
 ここでキーボードのレポートを送信する。 メインループからコールされる。
 
 # ビルド環境
@@ -20,7 +20,7 @@
 
 - Unofficial ではあるが、MacOS 版の C18 Compiler を見つけた。これでMacでビルドができる。
 
-Macでビルド実績のある MPLAB X と C18 Compiler のインストーラをenvフォルダに入れておく。
+Macでビルド実績のある MPLAB X と C18 Compiler のインストーラを`HDD/data/bak/dev_tools/pic_usb`フォルダに保管しておく。
 
 # PICkit3について
 MPLAB X のインストールのときに MPLAB X IDEだけではなく MPLAB IPE も同時にインストールすること。 でないとMPLAB X が PICkit3 を認識できない。
